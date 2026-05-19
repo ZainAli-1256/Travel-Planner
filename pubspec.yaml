@@ -1,0 +1,48 @@
+name: smart_travel_planner
+description: A premium Smart Travel Planner application with Firebase integration.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.27.1
+  firebase_auth: ^4.17.9
+  cloud_firestore: ^4.15.9
+
+  # UI & Styling
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.3.1
+  flutter_staggered_animations: ^1.1.1
+  lottie: ^3.1.0
+  shimmer: ^3.0.0
+
+  # Date Picker
+  table_calendar: ^3.1.2
+
+  # State & Utilities
+  intl: ^0.19.0
+  uuid: ^4.3.3
+
+  # Icons & Assets
+  flutter_svg: ^2.0.10+1
+  iconsax: ^0.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
