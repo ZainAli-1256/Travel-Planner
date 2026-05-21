@@ -30,9 +30,9 @@ class WeatherModel {
 
     return WeatherModel(
       cityName: json['name'] as String? ?? '',
-      tempC: (main['temp'] as num).toDouble() - 273.15,
-      tempMin: (main['temp_min'] as num).toDouble() - 273.15,
-      tempMax: (main['temp_max'] as num).toDouble() - 273.15,
+      tempC: (main['temp'] as num).toDouble(),
+      tempMin: (main['temp_min'] as num).toDouble(),
+      tempMax: (main['temp_max'] as num).toDouble(),
       description: weather['description'] as String,
       iconCode: weather['icon'] as String,
       humidity: main['humidity'] as int,
@@ -67,8 +67,8 @@ class ForecastDay {
     final weather = (json['weather'] as List).first as Map<String, dynamic>;
     return ForecastDay(
       date: DateTime.fromMillisecondsSinceEpoch((json['dt'] as int) * 1000),
-      tempMin: (main['temp_min'] as num).toDouble() - 273.15,
-      tempMax: (main['temp_max'] as num).toDouble() - 273.15,
+      tempMin: (main['temp_min'] as num).toDouble(),
+      tempMax: (main['temp_max'] as num).toDouble(),
       description: weather['description'] as String,
       iconCode: weather['icon'] as String,
     );

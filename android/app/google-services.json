@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "722105896871",
-    "project_id": "smart-travel-planner-ceacd",
-    "storage_bucket": "smart-travel-planner-ceacd.firebasestorage.app"
+    "project_number": "1030876459850",
+    "project_id": "smart-travel-planner-bq",
+    "storage_bucket": "smart-travel-planner-bq.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:722105896871:android:3c77050e04eb4fe63b7082",
+        "mobilesdk_app_id": "1:1030876459850:android:d53806fc47a73d3e1ec7b3",
         "android_client_info": {
           "package_name": "com.example.smart_travel_planner"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBuTn4htd8TlgjvmRv8wxsuwnsCQrh-4Sk"
+          "current_key": "AIzaSyCJy3yWS2Eu8kE8nehL-eHO9EYh4yFnVAY"
         }
       ],
       "services": {

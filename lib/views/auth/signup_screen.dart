@@ -65,29 +65,42 @@ class _SignupScreenState extends State<SignupScreen>
 
     setState(() => _isLoading = true);
 
-    final result = await _authService.signUpWithEmail(
-      name: _nameCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
-      password: _passCtrl.text.trim(),
-    );
-
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (result.success) {
-      AppHelpers.showSnack(
-        context,
-        'Account created successfully',
+    try {
+      final result = await _authService.signUpWithEmail(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text.trim(),
       );
 
-      Navigator.pop(context);
-    } else {
-      AppHelpers.showSnack(
-        context,
-        result.errorMessage ?? 'Signup failed',
-        isError: true,
-      );
+      if (!mounted) return;
+
+      if (result.success) {
+        await _authService.signOut();
+        if (mounted) {
+          AppHelpers.showSnack(
+            context,
+            'Account created. Please log in.',
+          );
+          await Future.delayed(const Duration(milliseconds: 400));
+          Navigator.pop(context, true);
+        }
+      } else {
+        AppHelpers.showSnack(
+          context,
+          result.errorMessage ?? 'Signup failed',
+          isError: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppHelpers.showSnack(
+          context,
+          'Signup failed. Please try again.',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

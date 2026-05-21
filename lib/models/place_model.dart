@@ -72,4 +72,82 @@ class PlaceModel {
           json['rating'] != null ? (json['rating'] as num).toDouble() : null,
     );
   }
+
+  /// Parse from Overpass (OpenStreetMap)
+  factory PlaceModel.fromOverpass(Map<String, dynamic> json) {
+    final tags = (json['tags'] as Map<String, dynamic>?) ?? {};
+    final name = tags['name'] as String? ?? 'Unnamed place';
+    final type = json['type']?.toString() ?? 'node';
+    final id = '${type}_${json['id']}';
+    final lat = (json['lat'] as num?)?.toDouble() ??
+        (json['center']?['lat'] as num?)?.toDouble();
+    final lon = (json['lon'] as num?)?.toDouble() ??
+        (json['center']?['lon'] as num?)?.toDouble();
+
+    return PlaceModel(
+      id: id,
+      name: name,
+      category: _mapOverpassCategory(tags),
+      address: _buildOverpassAddress(tags),
+      latitude: lat,
+      longitude: lon,
+    );
+  }
+
+  static String? _mapOverpassCategory(Map<String, dynamic> tags) {
+    final tourism = tags['tourism'] as String?;
+    final amenity = tags['amenity'] as String?;
+    final leisure = tags['leisure'] as String?;
+    final shop = tags['shop'] as String?;
+    final nature = tags['nature'] as String?;
+
+    return tourism ?? amenity ?? leisure ?? shop ?? nature;
+  }
+
+  static String? _buildOverpassAddress(Map<String, dynamic> tags) {
+    final parts = <String>[];
+    final full = tags['addr:full'] as String?;
+    if (full != null && full.trim().isNotEmpty) return full.trim();
+
+    final house = tags['addr:housenumber'] as String?;
+    final street = tags['addr:street'] as String?;
+    final place = tags['addr:place'] as String?;
+    final suburb = tags['addr:suburb'] as String?;
+    final district = tags['addr:district'] as String?;
+    final city = tags['addr:city'] as String?;
+    final town = tags['addr:town'] as String?;
+    final village = tags['addr:village'] as String?;
+    final hamlet = tags['addr:hamlet'] as String?;
+    final state = tags['addr:state'] as String?;
+    final region = tags['addr:region'] as String?;
+    final province = tags['addr:province'] as String?;
+    final postcode = tags['addr:postcode'] as String?;
+    final country = tags['addr:country'] as String?;
+
+    final firstLine = [house, street].whereType<String>().join(' ').trim();
+    if (firstLine.isNotEmpty) parts.add(firstLine);
+    if (place != null && place.trim().isNotEmpty) parts.add(place.trim());
+    if (suburb != null && suburb.trim().isNotEmpty) parts.add(suburb.trim());
+    if (district != null && district.trim().isNotEmpty) {
+      parts.add(district.trim());
+    }
+    if (city != null && city.trim().isNotEmpty) parts.add(city.trim());
+    if (town != null && town.trim().isNotEmpty) parts.add(town.trim());
+    if (village != null && village.trim().isNotEmpty) parts.add(village.trim());
+    if (hamlet != null && hamlet.trim().isNotEmpty) parts.add(hamlet.trim());
+    if (state != null && state.trim().isNotEmpty) parts.add(state.trim());
+    if (region != null && region.trim().isNotEmpty) parts.add(region.trim());
+    if (province != null && province.trim().isNotEmpty) {
+      parts.add(province.trim());
+    }
+    if (postcode != null && postcode.trim().isNotEmpty) {
+      parts.add(postcode.trim());
+    }
+    if (country != null && country.trim().isNotEmpty) {
+      parts.add(country.trim());
+    }
+
+    if (parts.isEmpty) return null;
+    return parts.join(', ');
+  }
 }

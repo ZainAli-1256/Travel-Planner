@@ -41,46 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCIr6XJjyeoQ1ErpPZiqq1eEYEI0Cob6i0',
-    appId: '1:722105896871:web:5672616f8bc8cefc3b7082',
-    messagingSenderId: '722105896871',
-    projectId: 'smart-travel-planner-ceacd',
-    authDomain: 'smart-travel-planner-ceacd.firebaseapp.com',
-    storageBucket: 'smart-travel-planner-ceacd.firebasestorage.app',
+    apiKey: 'AIzaSyAUtI1l2k9grTpzR4QhPkZ4C5zEH2T6Hws',
+    appId: '1:1030876459850:web:41d7a4ed715fe6f91ec7b3',
+    messagingSenderId: '1030876459850',
+    projectId: 'smart-travel-planner-bq',
+    authDomain: 'smart-travel-planner-bq.firebaseapp.com',
+    storageBucket: 'smart-travel-planner-bq.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBuTn4htd8TlgjvmRv8wxsuwnsCQrh-4Sk',
-    appId: '1:722105896871:android:3c77050e04eb4fe63b7082',
-    messagingSenderId: '722105896871',
-    projectId: 'smart-travel-planner-ceacd',
-    storageBucket: 'smart-travel-planner-ceacd.firebasestorage.app',
+    apiKey: 'AIzaSyCJy3yWS2Eu8kE8nehL-eHO9EYh4yFnVAY',
+    appId: '1:1030876459850:android:d53806fc47a73d3e1ec7b3',
+    messagingSenderId: '1030876459850',
+    projectId: 'smart-travel-planner-bq',
+    storageBucket: 'smart-travel-planner-bq.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDNcJMCOigMP0tTUc_8TOUyoWSRDfqgti0',
-    appId: '1:722105896871:ios:9ee1aa40ad4056ee3b7082',
-    messagingSenderId: '722105896871',
-    projectId: 'smart-travel-planner-ceacd',
-    storageBucket: 'smart-travel-planner-ceacd.firebasestorage.app',
+    apiKey: 'AIzaSyA7k1-sgBac2D9aQmUMn5IX4OFdfHTQtzo',
+    appId: '1:1030876459850:ios:bdf64669bba505771ec7b3',
+    messagingSenderId: '1030876459850',
+    projectId: 'smart-travel-planner-bq',
+    storageBucket: 'smart-travel-planner-bq.firebasestorage.app',
     iosBundleId: 'com.example.smartTravelPlanner',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDNcJMCOigMP0tTUc_8TOUyoWSRDfqgti0',
-    appId: '1:722105896871:ios:9ee1aa40ad4056ee3b7082',
-    messagingSenderId: '722105896871',
-    projectId: 'smart-travel-planner-ceacd',
-    storageBucket: 'smart-travel-planner-ceacd.firebasestorage.app',
+    apiKey: 'AIzaSyA7k1-sgBac2D9aQmUMn5IX4OFdfHTQtzo',
+    appId: '1:1030876459850:ios:bdf64669bba505771ec7b3',
+    messagingSenderId: '1030876459850',
+    projectId: 'smart-travel-planner-bq',
+    storageBucket: 'smart-travel-planner-bq.firebasestorage.app',
     iosBundleId: 'com.example.smartTravelPlanner',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCIr6XJjyeoQ1ErpPZiqq1eEYEI0Cob6i0',
-    appId: '1:722105896871:web:c0817fdfdd22fb213b7082',
-    messagingSenderId: '722105896871',
-    projectId: 'smart-travel-planner-ceacd',
-    authDomain: 'smart-travel-planner-ceacd.firebaseapp.com',
-    storageBucket: 'smart-travel-planner-ceacd.firebasestorage.app',
+    apiKey: 'AIzaSyAUtI1l2k9grTpzR4QhPkZ4C5zEH2T6Hws',
+    appId: '1:1030876459850:web:ed92b9f966df429e1ec7b3',
+    messagingSenderId: '1030876459850',
+    projectId: 'smart-travel-planner-bq',
+    authDomain: 'smart-travel-planner-bq.firebaseapp.com',
+    storageBucket: 'smart-travel-planner-bq.firebasestorage.app',
   );
+
 }

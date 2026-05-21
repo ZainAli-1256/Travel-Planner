@@ -3,10 +3,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'core/constants/app_theme.dart';
 import 'views/auth/login_screen.dart';
 import 'views/dashboard/dashboard_screen.dart';
+import 'views/onboarding/onboarding_screen.dart';
+import 'views/splash/splash_screen.dart';
+import 'views/profile/profile_completion_screen.dart';
+import 'services/firestore_service.dart';
+import 'models/user_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +39,55 @@ class SmartTravelPlannerApp extends StatelessWidget {
       title: 'Smart Travel Planner',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      home: const _AuthGate(),
+      home: const _AppStartGate(),
     );
+  }
+}
+
+class _AppStartGate extends StatefulWidget {
+  const _AppStartGate();
+
+  @override
+  State<_AppStartGate> createState() => _AppStartGateState();
+}
+
+class _AppStartGateState extends State<_AppStartGate> {
+  bool? _onboardingComplete;
+  bool _showSplash = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _primeStartup();
+  }
+
+  Future<void> _primeStartup() async {
+    final prefs = await SharedPreferences.getInstance();
+    final complete = prefs.getBool('onboardingComplete') ?? false;
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (mounted) {
+      setState(() {
+        _onboardingComplete = complete;
+        _showSplash = false;
+      });
+    }
+  }
+
+  Future<void> _finishOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboardingComplete', true);
+    if (mounted) setState(() => _onboardingComplete = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return const SplashScreen();
+    }
+    if (_onboardingComplete == false) {
+      return OnboardingScreen(onFinished: _finishOnboarding);
+    }
+    return const _AuthGate();
   }
 }
 
@@ -48,10 +101,14 @@ class _AuthGate extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const _SplashScreen();
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            return const _ProfileGate();
+          }
+          return const LoginScreen();
         }
         if (snapshot.hasData && snapshot.data != null) {
-          return const DashboardScreen();
+          return const _ProfileGate();
         }
         return const LoginScreen();
       },
@@ -59,40 +116,32 @@ class _AuthGate extends StatelessWidget {
   }
 }
 
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
+class _ProfileGate extends StatelessWidget {
+  const _ProfileGate();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0F2E),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF5A623), Color(0xFFFFCC6B)],
-                ),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(
-                Icons.flight_rounded,
-                color: Color(0xFF0A0F2E),
-                size: 40,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(Color(0xFFF5A623)),
-              strokeWidth: 2,
-            ),
-          ],
-        ),
-      ),
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const LoginScreen();
+
+    return StreamBuilder<UserModel?>(
+      stream: FirestoreService().streamUser(uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SplashScreen();
+        }
+
+        final user = snapshot.data;
+        if (user == null) {
+          return const LoginScreen();
+        }
+
+        if (!user.profileComplete) {
+          return ProfileCompletionScreen(user: user);
+        }
+
+        return const DashboardScreen();
+      },
     );
   }
 }

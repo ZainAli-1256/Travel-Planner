@@ -69,11 +69,64 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (result.success) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(
+          builder: (_) => const DashboardScreen(showWelcomeMessage: true),
+        ),
         (_) => false,
       );
     } else {
       AppHelpers.showSnack(context, result.errorMessage!, isError: true);
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final emailCtrl = TextEditingController(text: _emailCtrl.text);
+    final shouldSend = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.navyDeep,
+          title: Text('Reset Password',
+              style: GoogleFonts.sora(color: AppColors.white)),
+          content: TextField(
+            controller: emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            style: GoogleFonts.inter(color: AppColors.white),
+            decoration: InputDecoration(
+              hintText: 'Email address',
+              hintStyle: GoogleFonts.inter(color: AppColors.slate400),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel',
+                  style: TextStyle(color: AppColors.slate400)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child:
+                  const Text('Send', style: TextStyle(color: AppColors.amber)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSend != true) return;
+
+    final email = emailCtrl.text.trim();
+    if (email.isEmpty) return;
+
+    final result = await _authService.sendPasswordReset(email);
+    if (!mounted) return;
+
+    if (result.success) {
+      AppHelpers.showSnack(context, 'Password reset email sent.');
+    } else {
+      AppHelpers.showSnack(
+          context, result.errorMessage ?? 'Failed to send email',
+          isError: true);
     }
   }
 
@@ -153,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ],
                       ),
                       child: const Icon(
-                        Icons.flight_rounded,
+                        Icons.explore_rounded,
                         color: AppColors.navyDeep,
                         size: 32,
                       ),
@@ -258,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen>
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: _handleForgotPassword,
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
@@ -309,10 +362,20 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const SignupScreen()),
-                          ),
+                          onTap: () async {
+                            final created = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const SignupScreen(),
+                              ),
+                            );
+                            if (!mounted) return;
+                            if (created == true) {
+                              AppHelpers.showSnack(
+                                context,
+                                'Account created successfully. Please log in.',
+                              );
+                            }
+                          },
                           child: Text(
                             'Create one',
                             style: GoogleFonts.sora(
