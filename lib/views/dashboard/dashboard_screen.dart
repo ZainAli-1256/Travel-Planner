@@ -14,6 +14,7 @@ import '../profile/profile_screen.dart';
 import '../trips/create_trip_screen.dart';
 import '../trips/trip_detail_screen.dart';
 import '../trips/trip_history_detail_screen.dart';
+import '../../services/chat_notification_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool showWelcomeMessage;
@@ -33,6 +34,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    if (_currentUserId.isNotEmpty) {
+      ChatNotificationService.instance.startForUser(_currentUserId);
+    }
     if (widget.showWelcomeMessage) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         AppHelpers.showSnack(context, 'Login successful');
@@ -42,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
+    ChatNotificationService.instance.stop();
     _searchCtrl.dispose();
     super.dispose();
   }

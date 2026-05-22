@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../models/chat_message_model.dart';
 import '../../models/trip_model.dart';
 import 'itinerary_view.dart';
 import 'chat_view.dart';
@@ -11,6 +13,8 @@ import 'weather_view.dart';
 import 'places_view.dart';
 import '../../services/firestore_service.dart';
 import 'trip_edit_screen.dart';
+import '../../services/chat_state_store.dart';
+import '../../services/chat_notification_service.dart';
 
 class TripDetailScreen extends StatefulWidget {
   final TripModel trip;
@@ -26,6 +30,8 @@ class _TripDetailScreenState extends State<TripDetailScreen>
   late TabController _tabController;
   final _firestoreService = FirestoreService();
   late TripModel _trip;
+  DateTime _chatLastReadAt = DateTime.fromMillisecondsSinceEpoch(0);
+  Timer? _autoReadTimer;
 
   String get _currentUid => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -34,12 +40,55 @@ class _TripDetailScreenState extends State<TripDetailScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _trip = widget.trip;
+    _tabController.addListener(_handleTabChange);
+    _loadChatReadAt();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handleTabChange());
   }
 
   @override
   void dispose() {
+    _autoReadTimer?.cancel();
+    if (ChatNotificationService.instance.activeTripId.value == _trip.tripId) {
+      ChatNotificationService.instance.activeTripId.value = null;
+    }
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadChatReadAt() async {
+    if (_currentUid.isEmpty) return;
+    final value = await ChatStateStore.getLastRead(_currentUid, _trip.tripId);
+    if (value != null && mounted) {
+      setState(() => _chatLastReadAt = value);
+    }
+  }
+
+  Future<void> _markChatRead() async {
+    if (_currentUid.isEmpty) return;
+    final now = DateTime.now();
+    if (mounted) setState(() => _chatLastReadAt = now);
+    await ChatStateStore.setLastRead(_currentUid, _trip.tripId, now);
+  }
+
+  void _handleTabChange() {
+    if (!mounted) return;
+    if (_tabController.index == 1) {
+      ChatNotificationService.instance.activeTripId.value = _trip.tripId;
+      _markChatRead();
+    } else {
+      _autoReadTimer?.cancel();
+      if (ChatNotificationService.instance.activeTripId.value == _trip.tripId) {
+        ChatNotificationService.instance.activeTripId.value = null;
+      }
+    }
+  }
+
+  void _scheduleAutoRead() {
+    _autoReadTimer?.cancel();
+    _autoReadTimer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
+      _markChatRead();
+    });
   }
 
   Future<void> _refreshTrip() async {
@@ -335,11 +384,11 @@ class _TripDetailScreenState extends State<TripDetailScreen>
           labelColor: AppColors.amber,
           unselectedLabelColor: AppColors.slate400,
           indicatorColor: AppColors.amber,
-          tabs: const [
-            Tab(icon: Icon(Icons.map_rounded), text: 'Plan'),
-            Tab(icon: Icon(Icons.forum_rounded), text: 'Chat'),
-            Tab(icon: Icon(Icons.explore_rounded), text: 'Places'),
-            Tab(icon: Icon(Icons.cloud_rounded), text: 'Weather'),
+          tabs: [
+            const Tab(icon: Icon(Icons.map_rounded), text: 'Plan'),
+            _buildChatTab(),
+            const Tab(icon: Icon(Icons.explore_rounded), text: 'Places'),
+            const Tab(icon: Icon(Icons.cloud_rounded), text: 'Weather'),
           ],
         ),
       ),
@@ -352,6 +401,54 @@ class _TripDetailScreenState extends State<TripDetailScreen>
           WeatherView(trip: _trip),
         ],
       ),
+    );
+  }
+
+  Tab _buildChatTab() {
+    return Tab(
+      icon: StreamBuilder<List<ChatMessageModel>>(
+        stream: _firestoreService.streamMessages(_trip.tripId),
+        builder: (context, snapshot) {
+          final messages = snapshot.data ?? [];
+          final unread = messages.where((msg) {
+            if (msg.senderId == _currentUid) return false;
+            return msg.sentAt.isAfter(_chatLastReadAt);
+          }).length;
+
+          if (_tabController.index == 1 && unread > 0) {
+            _scheduleAutoRead();
+          }
+
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Icon(Icons.forum_rounded),
+              if (unread > 0)
+                Positioned(
+                  right: -8,
+                  top: -6,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.amber,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      unread > 99 ? '99+' : unread.toString(),
+                      style: const TextStyle(
+                        color: AppColors.navyDeep,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+      text: 'Chat',
     );
   }
 }

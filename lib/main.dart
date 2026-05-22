@@ -13,6 +13,7 @@ import 'views/splash/splash_screen.dart';
 import 'views/profile/profile_completion_screen.dart';
 import 'services/firestore_service.dart';
 import 'models/user_model.dart';
+import 'services/local_notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await LocalNotificationService.instance.initialize();
 
   runApp(const SmartTravelPlannerApp());
 }
