@@ -1,6 +1,7 @@
 // lib/services/firestore_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/user_model.dart';
 import '../models/trip_model.dart';
@@ -33,11 +34,25 @@ class FirestoreService {
     }
   }
 
+  Future<void> updateUser(String uid, Map<String, dynamic> data) async {
+    await _users.doc(uid).update(data);
+  }
+
   Stream<UserModel?> streamUser(String uid) {
     return _users.doc(uid).snapshots().map((snap) {
       if (!snap.exists || snap.data() == null) return null;
       return UserModel.fromMap(snap.data()!);
     });
+  }
+
+  Future<UserModel?> getUserByEmail(String email) async {
+    try {
+      final snap = await _users.where('email', isEqualTo: email).limit(1).get();
+      if (snap.docs.isEmpty) return null;
+      return UserModel.fromMap(snap.docs.first.data());
+    } catch (_) {
+      return null;
+    }
   }
 
   // ══ TRIP OPERATIONS ══════════════════════════════════════════════
@@ -71,6 +86,15 @@ class FirestoreService {
   Stream<List<TripModel>> streamUserTrips(String uid) {
     return _trips
         .where('createdBy', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => TripModel.fromMap(d.data())).toList());
+  }
+
+  Stream<List<TripModel>> streamMemberTrips(String uid) {
+    return _trips
+        .where('members', arrayContains: uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) =>
@@ -117,6 +141,44 @@ class FirestoreService {
     });
   }
 
+  Future<String> duplicateTrip({
+    required TripModel sourceTrip,
+    required DateTime newStartDate,
+    required DateTime newEndDate,
+    required String createdBy,
+    String? titleOverride,
+  }) async {
+    final newTripId = await createTrip(
+      title: titleOverride ?? '${sourceTrip.title} (Copy)',
+      destination: sourceTrip.destination,
+      startDate: newStartDate,
+      endDate: newEndDate,
+      createdBy: createdBy,
+      notes: sourceTrip.notes,
+      coverImageUrl: sourceTrip.coverImageUrl,
+    );
+
+    final sourceItems = await _itinerary(sourceTrip.tripId).get();
+    final batch = _db.batch();
+    final dateShift = newStartDate.difference(sourceTrip.startDate).inDays;
+
+    for (final doc in sourceItems.docs) {
+      final item = ItineraryItemModel.fromMap(doc.data());
+      final shiftedDate = item.date.add(Duration(days: dateShift));
+      final newItemId = _uuid.v4();
+      final newItem = item.copyWith(
+        itemId: newItemId,
+        tripId: newTripId,
+        date: shiftedDate,
+        dayLabel: DateFormat('MMM d').format(shiftedDate),
+      );
+      batch.set(_itinerary(newTripId).doc(newItemId), newItem.toMap());
+    }
+
+    await batch.commit();
+    return newTripId;
+  }
+
   // ══ ITINERARY OPERATIONS ═════════════════════════════════════════
 
   CollectionReference<Map<String, dynamic>> _itinerary(String tripId) =>
@@ -154,13 +216,8 @@ class FirestoreService {
   }
 
   Stream<List<ItineraryItemModel>> streamItinerary(String tripId) {
-    return _itinerary(tripId)
-        .orderBy('date')
-        .orderBy('sortOrder')
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => ItineraryItemModel.fromMap(d.data()))
-            .toList());
+    return _itinerary(tripId).orderBy('date').snapshots().map((snap) =>
+        snap.docs.map((d) => ItineraryItemModel.fromMap(d.data())).toList());
   }
 
   Future<void> updateItineraryItem(
@@ -199,7 +256,7 @@ class FirestoreService {
 
   Stream<List<ChatMessageModel>> streamMessages(String tripId) {
     return _messages(tripId)
-        .orderBy('sentAt', descending: false)
+        .orderBy('sentAt', descending: true)
         .snapshots()
         .map((snap) =>
             snap.docs.map((d) => ChatMessageModel.fromMap(d.data())).toList());

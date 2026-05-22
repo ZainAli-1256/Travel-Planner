@@ -53,6 +53,7 @@ class FirebaseAuthService {
         uid: user.uid,
         name: name.trim(),
         email: email.trim(),
+        profileComplete: false,
         createdAt: DateTime.now(),
       );
       await _firestore.createUser(userModel);

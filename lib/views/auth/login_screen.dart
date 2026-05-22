@@ -3,10 +3,12 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/animation_utils.dart';
 import '../../core/utils/helpers.dart';
+import '../../core/utils/input_formatters.dart';
 import '../../services/firebase_auth_service.dart';
 import 'signup_screen.dart';
 import '../dashboard/dashboard_screen.dart';
@@ -69,11 +71,66 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (result.success) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(
+          builder: (_) => const DashboardScreen(showWelcomeMessage: true),
+        ),
         (_) => false,
       );
     } else {
       AppHelpers.showSnack(context, result.errorMessage!, isError: true);
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final emailCtrl = TextEditingController(text: _emailCtrl.text);
+    final shouldSend = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.navyDeep,
+          title: Text('Reset Password',
+              style: GoogleFonts.sora(color: AppColors.white)),
+          content: TextField(
+            controller: emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            textCapitalization: TextCapitalization.none,
+            inputFormatters: [LeadingSpaceFormatter()],
+            style: GoogleFonts.inter(color: AppColors.white),
+            decoration: InputDecoration(
+              hintText: 'Email address',
+              hintStyle: GoogleFonts.inter(color: AppColors.slate400),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel',
+                  style: TextStyle(color: AppColors.slate400)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child:
+                  const Text('Send', style: TextStyle(color: AppColors.amber)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSend != true) return;
+
+    final email = emailCtrl.text.trim();
+    if (email.isEmpty) return;
+
+    final result = await _authService.sendPasswordReset(email);
+    if (!mounted) return;
+
+    if (result.success) {
+      AppHelpers.showSnack(context, 'Password reset email sent.');
+    } else {
+      AppHelpers.showSnack(
+          context, result.errorMessage ?? 'Failed to send email',
+          isError: true);
     }
   }
 
@@ -153,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ],
                       ),
                       child: const Icon(
-                        Icons.flight_rounded,
+                        Icons.explore_rounded,
                         color: AppColors.navyDeep,
                         size: 32,
                       ),
@@ -207,6 +264,8 @@ class _LoginScreenState extends State<LoginScreen>
                               label: 'Email address',
                               icon: Icons.mail_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
+                              textCapitalization: TextCapitalization.none,
+                              inputFormatters: [LeadingSpaceFormatter()],
                               onFocusChange: (v) =>
                                   setState(() => _emailFocused = v),
                               isFocused: _emailFocused,
@@ -230,6 +289,7 @@ class _LoginScreenState extends State<LoginScreen>
                               label: 'Password',
                               icon: Icons.lock_outline_rounded,
                               obscureText: _obscurePass,
+                              textCapitalization: TextCapitalization.none,
                               onFocusChange: (v) =>
                                   setState(() => _passFocused = v),
                               isFocused: _passFocused,
@@ -258,7 +318,7 @@ class _LoginScreenState extends State<LoginScreen>
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: _handleForgotPassword,
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
@@ -309,10 +369,20 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const SignupScreen()),
-                          ),
+                          onTap: () async {
+                            final created = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const SignupScreen(),
+                              ),
+                            );
+                            if (!mounted) return;
+                            if (created == true) {
+                              AppHelpers.showSnack(
+                                context,
+                                'Account created successfully. Please log in.',
+                              );
+                            }
+                          },
                           child: Text(
                             'Create one',
                             style: GoogleFonts.sora(
@@ -369,10 +439,12 @@ class _FocusAwareField extends StatelessWidget {
   final IconData icon;
   final bool obscureText;
   final TextInputType keyboardType;
+  final TextCapitalization textCapitalization;
   final void Function(bool) onFocusChange;
   final bool isFocused;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final List<TextInputFormatter>? inputFormatters;
 
   const _FocusAwareField({
     required this.controller,
@@ -380,10 +452,12 @@ class _FocusAwareField extends StatelessWidget {
     required this.icon,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
+    this.textCapitalization = TextCapitalization.sentences,
     required this.onFocusChange,
     required this.isFocused,
     this.suffixIcon,
     this.validator,
+    this.inputFormatters,
   });
 
   @override
@@ -408,8 +482,10 @@ class _FocusAwareField extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
           style: GoogleFonts.inter(color: AppColors.white, fontSize: 15),
           validator: validator,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             labelText: label,
             prefixIcon: Icon(icon,

@@ -23,6 +23,15 @@ dependencies:
   lottie: ^3.1.0
   shimmer: ^3.0.0
 
+  # Networking
+  http: ^1.2.2
+
+  # Storage
+  shared_preferences: ^2.2.3
+
+  # Notifications
+  flutter_local_notifications: ^17.1.2
+
   # Date Picker
   table_calendar: ^3.1.2
 
