@@ -15,6 +15,7 @@ import '../trips/create_trip_screen.dart';
 import '../trips/trip_detail_screen.dart';
 import '../trips/trip_history_detail_screen.dart';
 import '../../services/chat_notification_service.dart';
+import '../../core/utils/input_formatters.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool showWelcomeMessage;
@@ -191,6 +192,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: TextField(
                                 controller: _searchCtrl,
                                 onChanged: (_) => setState(() {}),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                inputFormatters: [LeadingSpaceFormatter()],
                                 style:
                                     GoogleFonts.inter(color: AppColors.white),
                                 decoration: InputDecoration(

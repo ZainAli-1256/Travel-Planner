@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/place_model.dart';
 import '../../services/places_service.dart';
+import '../../core/utils/input_formatters.dart';
 
 class CitySearchScreen extends StatefulWidget {
   const CitySearchScreen({super.key});
@@ -27,7 +28,13 @@ class _CitySearchScreenState extends State<CitySearchScreen> {
 
   Future<void> _search() async {
     final query = _searchCtrl.text.trim();
-    if (query.isEmpty) return;
+    if (query.length < 2) {
+      setState(() {
+        _error = 'Enter at least 2 characters to search.';
+        _results = [];
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -77,6 +84,8 @@ class _CitySearchScreenState extends State<CitySearchScreen> {
                     child: TextField(
                       controller: _searchCtrl,
                       style: GoogleFonts.inter(color: AppColors.white),
+                      textCapitalization: TextCapitalization.sentences,
+                      inputFormatters: [LeadingSpaceFormatter()],
                       textInputAction: TextInputAction.search,
                       onSubmitted: (_) => _search(),
                       decoration: InputDecoration(

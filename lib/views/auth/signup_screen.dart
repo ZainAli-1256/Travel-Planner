@@ -1,12 +1,14 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/animation_utils.dart';
 import '../../core/utils/helpers.dart';
 import '../../services/firebase_auth_service.dart';
+import '../../core/utils/input_formatters.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -209,6 +211,11 @@ class _SignupScreenState extends State<SignupScreen>
                             controller: _nameCtrl,
                             label: 'Full Name',
                             icon: Icons.person_outline_rounded,
+                            textCapitalization: TextCapitalization.sentences,
+                            inputFormatters: [
+                              LeadingSpaceFormatter(),
+                              LengthLimitingTextInputFormatter(60),
+                            ],
                             validator: (v) {
                               if (v == null || v.isEmpty) {
                                 return 'Enter your name';
@@ -222,6 +229,8 @@ class _SignupScreenState extends State<SignupScreen>
                             label: 'Email',
                             icon: Icons.mail_outline_rounded,
                             keyboardType: TextInputType.emailAddress,
+                            textCapitalization: TextCapitalization.none,
+                            inputFormatters: [LeadingSpaceFormatter()],
                             validator: (v) {
                               if (v == null || v.isEmpty) {
                                 return 'Enter your email';
@@ -235,6 +244,7 @@ class _SignupScreenState extends State<SignupScreen>
                             label: 'Password',
                             icon: Icons.lock_outline_rounded,
                             obscureText: _obscurePass,
+                            textCapitalization: TextCapitalization.none,
                             suffixIcon: GestureDetector(
                               onTap: () {
                                 setState(() {
@@ -261,6 +271,7 @@ class _SignupScreenState extends State<SignupScreen>
                             label: 'Confirm Password',
                             icon: Icons.lock_person_outlined,
                             obscureText: _obscureConfirm,
+                            textCapitalization: TextCapitalization.none,
                             suffixIcon: GestureDetector(
                               onTap: () {
                                 setState(() {
@@ -336,6 +347,8 @@ class _Field extends StatelessWidget {
   final Widget? suffixIcon;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter>? inputFormatters;
 
   const _Field({
     required this.controller,
@@ -345,6 +358,8 @@ class _Field extends StatelessWidget {
     this.suffixIcon,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.textCapitalization = TextCapitalization.sentences,
+    this.inputFormatters,
   });
 
   @override
@@ -353,7 +368,9 @@ class _Field extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
       validator: validator,
+      inputFormatters: inputFormatters,
       style: GoogleFonts.inter(
         color: AppColors.white,
       ),

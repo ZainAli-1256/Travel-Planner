@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +8,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../models/trip_model.dart';
 import '../../../models/itinerary_item_model.dart';
 import '../../../services/firestore_service.dart';
+import '../../../core/utils/input_formatters.dart';
 
 class ItineraryView extends StatefulWidget {
   final String tripId;
@@ -44,6 +46,11 @@ class _ItineraryViewState extends State<ItineraryView> {
                   TextField(
                     controller: titleCtrl,
                     style: const TextStyle(color: AppColors.white),
+                    textCapitalization: TextCapitalization.sentences,
+                    inputFormatters: [
+                      LeadingSpaceFormatter(),
+                      LengthLimitingTextInputFormatter(80),
+                    ],
                     decoration: const InputDecoration(
                       labelText: 'Title',
                       labelStyle: TextStyle(color: AppColors.slate400),
@@ -52,6 +59,8 @@ class _ItineraryViewState extends State<ItineraryView> {
                   TextField(
                     controller: placeCtrl,
                     style: const TextStyle(color: AppColors.white),
+                    textCapitalization: TextCapitalization.none,
+                    inputFormatters: [LengthLimitingTextInputFormatter(20)],
                     decoration: const InputDecoration(
                       labelText: 'Start time',
                       labelStyle: TextStyle(color: AppColors.slate400),
@@ -60,6 +69,11 @@ class _ItineraryViewState extends State<ItineraryView> {
                   TextField(
                     controller: descCtrl,
                     style: const TextStyle(color: AppColors.white),
+                    textCapitalization: TextCapitalization.sentences,
+                    inputFormatters: [
+                      LeadingSpaceFormatter(),
+                      LengthLimitingTextInputFormatter(200),
+                    ],
                     decoration: const InputDecoration(
                       labelText: 'Notes (optional)',
                       labelStyle: TextStyle(color: AppColors.slate400),
@@ -187,6 +201,11 @@ class _ItineraryViewState extends State<ItineraryView> {
                     TextField(
                       controller: titleCtrl,
                       style: const TextStyle(color: AppColors.white),
+                      textCapitalization: TextCapitalization.sentences,
+                      inputFormatters: [
+                        LeadingSpaceFormatter(),
+                        LengthLimitingTextInputFormatter(80),
+                      ],
                       decoration: const InputDecoration(
                         labelText: 'Title',
                         labelStyle: TextStyle(color: AppColors.slate400),
@@ -195,6 +214,8 @@ class _ItineraryViewState extends State<ItineraryView> {
                     TextField(
                       controller: timeCtrl,
                       style: const TextStyle(color: AppColors.white),
+                      textCapitalization: TextCapitalization.none,
+                      inputFormatters: [LengthLimitingTextInputFormatter(20)],
                       decoration: const InputDecoration(
                         labelText: 'Estimated Time',
                         labelStyle: TextStyle(color: AppColors.slate400),
@@ -203,6 +224,11 @@ class _ItineraryViewState extends State<ItineraryView> {
                     TextField(
                       controller: descCtrl,
                       style: const TextStyle(color: AppColors.white),
+                      textCapitalization: TextCapitalization.sentences,
+                      inputFormatters: [
+                        LeadingSpaceFormatter(),
+                        LengthLimitingTextInputFormatter(200),
+                      ],
                       decoration: const InputDecoration(
                         labelText: 'Notes (optional)',
                         labelStyle: TextStyle(color: AppColors.slate400),
@@ -251,7 +277,7 @@ class _ItineraryViewState extends State<ItineraryView> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    if (titleCtrl.text.isEmpty) return;
+                    if (titleCtrl.text.trim().isEmpty) return;
                     await _firestoreService.updateItineraryItem(
                       widget.tripId,
                       item.itemId,

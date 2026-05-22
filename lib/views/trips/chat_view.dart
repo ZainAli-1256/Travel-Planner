@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../models/chat_message_model.dart';
 import '../../../services/firestore_service.dart';
+import '../../../core/utils/input_formatters.dart';
 
 class ChatView extends StatefulWidget {
   final String tripId;
@@ -47,6 +49,12 @@ class _ChatViewState extends State<ChatView> {
   void _send() {
     final text = _msgCtrl.text.trim();
     if (text.isEmpty) return;
+    if (text.length > 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Message is too long.')),
+      );
+      return;
+    }
     if (_currentUid.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -159,6 +167,11 @@ class _ChatViewState extends State<ChatView> {
                   controller: _msgCtrl,
                   style: const TextStyle(color: AppColors.white),
                   onSubmitted: (_) => _send(),
+                  textCapitalization: TextCapitalization.sentences,
+                  inputFormatters: [
+                    LeadingSpaceFormatter(),
+                    LengthLimitingTextInputFormatter(500),
+                  ],
                   decoration: InputDecoration(
                     hintText: 'Type a message...',
                     hintStyle: const TextStyle(color: AppColors.slate400),

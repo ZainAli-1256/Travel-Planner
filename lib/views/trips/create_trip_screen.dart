@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../services/firestore_service.dart';
 import 'city_search_screen.dart';
+import '../../core/utils/input_formatters.dart';
 
 class CreateTripScreen extends StatefulWidget {
   const CreateTripScreen({super.key});
@@ -143,7 +145,13 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                       controller: _titleCtrl,
                       hint: 'e.g. Summer Vacation',
                       icon: Icons.title_rounded,
-                      validator: (val) => val!.isEmpty ? 'Enter a title' : null,
+                      inputFormatters: [
+                        LeadingSpaceFormatter(),
+                        LengthLimitingTextInputFormatter(60),
+                      ],
+                      validator: (val) => (val == null || val.trim().isEmpty)
+                          ? 'Enter a title'
+                          : null,
                     ),
                     const SizedBox(height: 24),
                     _buildLabel('Destination'),
@@ -152,6 +160,10 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                       controller: _destinationCtrl,
                       hint: 'e.g. Paris, France',
                       icon: Icons.location_on_rounded,
+                      inputFormatters: [
+                        LeadingSpaceFormatter(),
+                        LengthLimitingTextInputFormatter(80),
+                      ],
                       suffixIcon: IconButton(
                         onPressed: _openCitySearch,
                         icon: const Icon(Icons.search_rounded,
@@ -159,7 +171,9 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                         tooltip: 'Search cities',
                       ),
                       validator: (val) =>
-                          val!.isEmpty ? 'Enter a destination' : null,
+                          (val == null || val.trim().isEmpty)
+                          ? 'Enter a destination'
+                          : null,
                     ),
                     const SizedBox(height: 24),
                     _buildLabel('Travel Dates'),
@@ -203,6 +217,10 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                       hint: 'Add any specific things to remember...',
                       icon: Icons.notes_rounded,
                       maxLines: 3,
+                      inputFormatters: [
+                        LeadingSpaceFormatter(),
+                        LengthLimitingTextInputFormatter(200),
+                      ],
                     ),
                     const SizedBox(height: 48),
                     SizedBox(
@@ -257,12 +275,16 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
     String? Function(String?)? validator,
     Widget? suffixIcon,
     int maxLines = 1,
+    TextCapitalization textCapitalization = TextCapitalization.sentences,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
       style: GoogleFonts.inter(color: AppColors.white),
       maxLines: maxLines,
       validator: validator,
+      textCapitalization: textCapitalization,
+      inputFormatters: inputFormatters ?? [LeadingSpaceFormatter()],
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.inter(color: AppColors.slate400),

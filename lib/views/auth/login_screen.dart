@@ -3,10 +3,12 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/animation_utils.dart';
 import '../../core/utils/helpers.dart';
+import '../../core/utils/input_formatters.dart';
 import '../../services/firebase_auth_service.dart';
 import 'signup_screen.dart';
 import '../dashboard/dashboard_screen.dart';
@@ -91,6 +93,8 @@ class _LoginScreenState extends State<LoginScreen>
           content: TextField(
             controller: emailCtrl,
             keyboardType: TextInputType.emailAddress,
+            textCapitalization: TextCapitalization.none,
+            inputFormatters: [LeadingSpaceFormatter()],
             style: GoogleFonts.inter(color: AppColors.white),
             decoration: InputDecoration(
               hintText: 'Email address',
@@ -260,6 +264,8 @@ class _LoginScreenState extends State<LoginScreen>
                               label: 'Email address',
                               icon: Icons.mail_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
+                              textCapitalization: TextCapitalization.none,
+                              inputFormatters: [LeadingSpaceFormatter()],
                               onFocusChange: (v) =>
                                   setState(() => _emailFocused = v),
                               isFocused: _emailFocused,
@@ -283,6 +289,7 @@ class _LoginScreenState extends State<LoginScreen>
                               label: 'Password',
                               icon: Icons.lock_outline_rounded,
                               obscureText: _obscurePass,
+                              textCapitalization: TextCapitalization.none,
                               onFocusChange: (v) =>
                                   setState(() => _passFocused = v),
                               isFocused: _passFocused,
@@ -432,10 +439,12 @@ class _FocusAwareField extends StatelessWidget {
   final IconData icon;
   final bool obscureText;
   final TextInputType keyboardType;
+  final TextCapitalization textCapitalization;
   final void Function(bool) onFocusChange;
   final bool isFocused;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final List<TextInputFormatter>? inputFormatters;
 
   const _FocusAwareField({
     required this.controller,
@@ -443,10 +452,12 @@ class _FocusAwareField extends StatelessWidget {
     required this.icon,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
+    this.textCapitalization = TextCapitalization.sentences,
     required this.onFocusChange,
     required this.isFocused,
     this.suffixIcon,
     this.validator,
+    this.inputFormatters,
   });
 
   @override
@@ -471,8 +482,10 @@ class _FocusAwareField extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
           style: GoogleFonts.inter(color: AppColors.white, fontSize: 15),
           validator: validator,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             labelText: label,
             prefixIcon: Icon(icon,

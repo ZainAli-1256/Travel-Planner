@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +8,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/helpers.dart';
 import '../../models/trip_model.dart';
 import '../../services/firestore_service.dart';
+import '../../core/utils/input_formatters.dart';
 
 class TripEditScreen extends StatefulWidget {
   final TripModel trip;
@@ -161,7 +163,13 @@ class _TripEditScreenState extends State<TripEditScreen> {
                   controller: _titleCtrl,
                   hint: 'e.g. Summer Vacation',
                   icon: Icons.title_rounded,
-                  validator: (val) => val!.isEmpty ? 'Enter a title' : null,
+                  inputFormatters: [
+                    LeadingSpaceFormatter(),
+                    LengthLimitingTextInputFormatter(60),
+                  ],
+                  validator: (val) => (val == null || val.trim().isEmpty)
+                      ? 'Enter a title'
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 _buildLabel('Destination'),
@@ -170,8 +178,14 @@ class _TripEditScreenState extends State<TripEditScreen> {
                   controller: _destinationCtrl,
                   hint: 'e.g. Paris, France',
                   icon: Icons.location_on_rounded,
+                  inputFormatters: [
+                    LeadingSpaceFormatter(),
+                    LengthLimitingTextInputFormatter(80),
+                  ],
                   validator: (val) =>
-                      val!.isEmpty ? 'Enter a destination' : null,
+                      (val == null || val.trim().isEmpty)
+                      ? 'Enter a destination'
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 _buildLabel('Travel Dates'),
@@ -215,6 +229,10 @@ class _TripEditScreenState extends State<TripEditScreen> {
                   hint: 'Add any specific things to remember...',
                   icon: Icons.notes_rounded,
                   maxLines: 3,
+                  inputFormatters: [
+                    LeadingSpaceFormatter(),
+                    LengthLimitingTextInputFormatter(200),
+                  ],
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -255,12 +273,16 @@ class _TripEditScreenState extends State<TripEditScreen> {
     required IconData icon,
     String? Function(String?)? validator,
     int maxLines = 1,
+    TextCapitalization textCapitalization = TextCapitalization.sentences,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
       style: GoogleFonts.inter(color: AppColors.white),
       maxLines: maxLines,
       validator: validator,
+      textCapitalization: textCapitalization,
+      inputFormatters: inputFormatters ?? [LeadingSpaceFormatter()],
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.inter(color: AppColors.slate400),

@@ -8,6 +8,7 @@ import '../../core/utils/helpers.dart';
 import '../../models/user_model.dart';
 import '../../services/firestore_service.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../../core/utils/input_formatters.dart';
 
 class ProfileCompletionScreen extends StatefulWidget {
   final UserModel user;
@@ -231,6 +232,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   hint: 'Email address',
                   icon: Icons.mail_outline_rounded,
                   readOnly: true,
+                  textCapitalization: TextCapitalization.none,
                 ),
                 const SizedBox(height: 16),
                 _buildLabel('Phone'),
@@ -251,6 +253,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   keyboardType: TextInputType.datetime,
                   readOnly: true,
                   onTap: _pickDateOfBirth,
+                  textCapitalization: TextCapitalization.none,
                   validator: (val) => _validateDateOfBirth(val),
                 ),
                 const SizedBox(height: 16),
@@ -322,6 +325,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   controller: _passportNumberCtrl,
                   hint: 'Passport number',
                   icon: Icons.badge_outlined,
+                  textCapitalization: TextCapitalization.none,
                   validator: (val) => _validateOptionalPassportNumber(val),
                 ),
                 const SizedBox(height: 16),
@@ -332,6 +336,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   hint: 'YYYY-MM-DD',
                   icon: Icons.event_outlined,
                   keyboardType: TextInputType.datetime,
+                  textCapitalization: TextCapitalization.none,
                   validator: (val) =>
                       _validateOptionalDate(val, 'passport expiry'),
                 ),
@@ -601,6 +606,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
     bool readOnly = false,
     VoidCallback? onTap,
     List<TextInputFormatter>? inputFormatters,
+    TextCapitalization textCapitalization = TextCapitalization.sentences,
   }) {
     return TextFormField(
       controller: controller,
@@ -610,7 +616,8 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
       maxLines: maxLines,
       readOnly: readOnly,
       onTap: onTap,
-      inputFormatters: inputFormatters,
+      textCapitalization: textCapitalization,
+      inputFormatters: inputFormatters ?? [LeadingSpaceFormatter()],
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.inter(color: AppColors.slate400),

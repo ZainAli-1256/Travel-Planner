@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -15,6 +16,7 @@ import '../../services/firestore_service.dart';
 import 'trip_edit_screen.dart';
 import '../../services/chat_state_store.dart';
 import '../../services/chat_notification_service.dart';
+import '../../core/utils/input_formatters.dart';
 
 class TripDetailScreen extends StatefulWidget {
   final TripModel trip;
@@ -199,6 +201,9 @@ class _TripDetailScreenState extends State<TripDetailScreen>
           content: TextField(
             controller: emailCtrl,
             style: GoogleFonts.inter(color: AppColors.white),
+            keyboardType: TextInputType.emailAddress,
+            textCapitalization: TextCapitalization.none,
+            inputFormatters: [LeadingSpaceFormatter()],
             decoration: InputDecoration(
               hintText: 'Email address',
               hintStyle: GoogleFonts.inter(color: AppColors.slate400),
@@ -230,6 +235,15 @@ class _TripDetailScreenState extends State<TripDetailScreen>
 
     final email = emailCtrl.text.trim();
     if (email.isEmpty) return;
+    final isValidEmail = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
+    if (!isValidEmail) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Enter a valid email address.')),
+        );
+      }
+      return;
+    }
 
     final user = await _firestoreService.getUserByEmail(email);
     if (user == null) {
@@ -271,6 +285,11 @@ class _TripDetailScreenState extends State<TripDetailScreen>
                   TextField(
                     controller: titleCtrl,
                     style: GoogleFonts.inter(color: AppColors.white),
+                    textCapitalization: TextCapitalization.sentences,
+                    inputFormatters: [
+                      LeadingSpaceFormatter(),
+                      LengthLimitingTextInputFormatter(60),
+                    ],
                     decoration: InputDecoration(
                       labelText: 'New trip title',
                       labelStyle: GoogleFonts.inter(color: AppColors.slate400),

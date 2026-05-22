@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -9,6 +10,7 @@ import '../../models/itinerary_item_model.dart';
 import '../../models/trip_model.dart';
 import '../../services/firestore_service.dart';
 import 'trip_detail_screen.dart';
+import '../../core/utils/input_formatters.dart';
 
 class TripHistoryDetailScreen extends StatefulWidget {
   final TripModel trip;
@@ -45,6 +47,11 @@ class _TripHistoryDetailScreenState extends State<TripHistoryDetailScreen> {
                   TextField(
                     controller: titleCtrl,
                     style: GoogleFonts.inter(color: AppColors.white),
+                    textCapitalization: TextCapitalization.sentences,
+                    inputFormatters: [
+                      LeadingSpaceFormatter(),
+                      LengthLimitingTextInputFormatter(60),
+                    ],
                     decoration: InputDecoration(
                       labelText: 'New trip title',
                       labelStyle: GoogleFonts.inter(color: AppColors.slate400),

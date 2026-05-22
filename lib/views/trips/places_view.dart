@@ -4,6 +4,7 @@ import '../../../models/place_model.dart';
 import '../../../services/places_service.dart';
 import '../../../core/constants/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/utils/input_formatters.dart';
 
 class PlacesView extends StatefulWidget {
   final TripModel trip;
@@ -115,6 +116,8 @@ class _PlacesViewState extends State<PlacesView> {
           padding: const EdgeInsets.all(16),
           child: TextField(
             style: const TextStyle(color: AppColors.white),
+            textCapitalization: TextCapitalization.sentences,
+            inputFormatters: [LeadingSpaceFormatter()],
             decoration: InputDecoration(
               hintText: 'Search places, food, attractions...',
               hintStyle: const TextStyle(color: AppColors.slate400),

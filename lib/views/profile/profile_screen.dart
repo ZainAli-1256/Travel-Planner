@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../models/user_model.dart';
 import '../../services/firebase_auth_service.dart';
 import '../../services/firestore_service.dart';
 import 'profile_completion_screen.dart';
+import '../../core/utils/input_formatters.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -36,6 +38,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           content: TextField(
             controller: nameCtrl,
             style: GoogleFonts.inter(color: AppColors.white),
+            textCapitalization: TextCapitalization.sentences,
+            inputFormatters: [
+              LeadingSpaceFormatter(),
+              LengthLimitingTextInputFormatter(60),
+            ],
             decoration: InputDecoration(
               hintText: 'Full name',
               hintStyle: GoogleFonts.inter(color: AppColors.slate400),
